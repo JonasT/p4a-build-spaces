@@ -124,9 +124,9 @@ class BuildEnvironment(object):
                 "{INSTALL_SHARED_PACKAGES}", install_shared_instructions)
             t = t.replace(
                 "{LAUNCH_CMD}",
-                launch_cmd.replace("\\", "\\\\").replace(
-                "\"", "\\\"").replace("\n", "\\n").replace(
-                "\r", "\\r").replace("'", "'\"'\"'"))
+                launch_cmd.replace("\\", "\\\\").\
+                    replace("\n", "\\n").\
+                    replace("\r", "\\r").replace("'", "'\"'\"'"))
             if user_id_or_name == "root" or str(user_id_or_name) == "0":
                 t = t.replace("{PREPARE_USER}", "ENV HOME /home/userhome\n" +
                     "ENV BUILDUSERNAME root")

@@ -32,37 +32,29 @@ RUN echo '{LAUNCH_CMD}' > /tmp/launchcmd.txt
 RUN /bin/echo -e '#!/usr/bin/python3\n\
 import json\n\
 import os\n\
-print("echo \"\"")\n\
-print("echo \"  *** WELCOME to p4a-build-spaces ***\"\\n")\n\
-print("echo \"\"\\n")\n\
-print("echo \"To build a kivy demo app, use this command:\"")\n\
-print("echo \"\"\\n")\n\
+print("")\n\
+print("  *** WELCOME to p4a-build-spaces ***")\n\
+print("")\n\
+print("To build a kivy demo app, use this command:")\n\
+print("")\n\
 init_file = ""\n\
 if os.environ["PIP"] == "pip2":\n\
-    demoapp_line = "echo \"$ cd ~/testapp-sdl2-keyboard && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --requirements=kivy,python2 --private .\"\\n"\n\
+    demoapp_line = "$ cd ~/testapp-sdl2-keyboard && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --requirements=kivy,python2 --private ."\n\
     print(demoapp_line)\n\
     init_file += "shopt -s expand_aliases\\n"\n\
     init_file += "alias testbuild=\"cd ~/testapp-sdl2-keyboard && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --requirements=kivy,python2 --private . && cp *.apk ~/output\"\\n"\n\
     init_file += "alias testbuild_webview=\"cd ~/testapp-webview-flask && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --bootstrap webview --requirements=python2,flask --private . && cp *.apk ~/output\"\\n"\n\
     init_file += "alias testbuild_service_only=\"cd ~/testapp-service_only-nogui && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --bootstrap service_only --requirements=pyjnius,python2 --private . && cp *.apk ~/output\"\\n"\n\
 else:\n\
-    demoapp_line = "echo \"$ cd ~/testapp-sdl2-keyboard && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --requirements=kivy,python3 --private .\"\\n"\n\
+    demoapp_line = "$ cd ~/testapp-sdl2-keyboard && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --requirements=kivy,python3 --private ."\n\
     print(demoapp_line)\n\
     init_file += "shopt -s expand_aliases\\n"\n\
     init_file += "alias testbuild=\"cd ~/testapp-sdl2-keyboard && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --requirements=kivy,python3 --private . && cp *.apk ~/output\"\\n"\n\
     init_file += "alias testbuild_webview=\"cd ~/testapp-webview-flask && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --bootstrap webview --requirements=python3,flask --private . && cp *.apk ~/output\"\\n"\n\
     init_file += "alias testbuild_service_only=\"cd ~/testapp-service_only-nogui && p4a apk --arch=armeabi-v7a --name test --package com.example.test --version 1 --bootstrap service_only --requirements=pyjnius,python3 --private . && cp *.apk ~/output\"\\n"\n\
-print("echo \"\"\\n")\n\
-print("echo \"... or use the shortcut alias \\`testbuild\\`!\"\\n")\n\
-print("echo \"\"\\n")\n\
-with open("/tmp/launchcmd.txt", "r") as f:\n\
-    import shlex\n\
-    args = shlex.split(f.read().strip())\n\
-    print("CMD=()")\n\
-    i = -1\n\
-    for arg in args:\n\
-        i += 1\n\
-        print("CMD[" + str(i) + "]=" + shlex.quote(arg))\n\
+print("")\n\
+print("... or use the shortcut alias `testbuild`!")\n\
+print("")\n\
 vars = ["ANDROIDAP='$ANDROIDAPI'",\n\
     "ANDROIDNDKVER='$NDKVER'",\n\
     "NDKAPI='$NDKAPI'",\n\
@@ -71,7 +63,8 @@ vars = ["ANDROIDAP='$ANDROIDAPI'",\n\
     "JAVA_OPTS=\"-Xms512m -Xmx1024m\"",\n\
     "TESTPATH=\"$PATH:/home/userhome/.local/bin\"",\n\
     "PATH=\"$PATH:/home/userhome/.local/bin\"",\n\
-    "ANDROIDSDK=/sdk-install/ ANDROIDNDK=\"'$NDKDIR'\"",\n\
+    "ANDROIDSDK=/sdk-install/",\n\
+    "ANDROIDNDK=\"'$NDKDIR'\"",\n\
     ]\n\
 with open(os.path.expanduser("~/.pam_environment"), "a", encoding="utf-8") as f1:\n\
     f1.write("\\n" + "\\n".join([\n\
@@ -86,13 +79,34 @@ with open(os.path.expanduser("~/.bashrc"), "a", encoding="utf-8") as f2:\n\
     f2.write("\\n" + init_file + "\\n")\n\
     f2.write("\\n" + "\\nexport ".join(vars) + "\\n")\n\
 with open(os.path.expanduser("~/.additional_env"), "a", encoding="utf-8") as f3:\n\
-    f3.write("\\n" + "\\nexport ".join(vars) + "\\n")' > /tmp/cmdline.py
+    f3.write("\\n" + "\\nexport ".join(vars) + "\\n")' > /tmp/output_greeting_and_setup_env.py
 
 # Actual launch script:
-RUN /bin/echo -e '#!/bin/sh\n\
-python3 /tmp/cmdline.py > /tmp/launch-prepare.sh\n\
-source /tmp/launch-prepare.sh\n\
-exec -- ${CMD[@]}' > /tmp/launch.sh
+RUN /bin/echo -e '#!/usr/bin/python3\n\
+import os\n\
+import shlex\n\
+os.system("python3 /tmp/output_greeting_and_setup_env.py")\n\
+with open(os.path.expanduser("~/.pam_environment"), "r",\n\
+          encoding="utf-8") as f:\n\
+    for line in f.read().splitlines():\n\
+        if len(line.strip()) == 0 or "=" not in line:\n\
+            continue\n\
+        # Extract value to assign:
+        k = line.partition("=")[0].strip()\n\
+        v = line.partition("=")[2].strip()\n\
+        # Clean up PAM-specific syntax:\n\
+        if k.lower().endswith(" default"):\n\
+            k = k.rpartition(" ")[0].strip()\n\
+        v = line.partition("=")[2].strip()\n\
+        if v.startswith("\"") and v.endswith("\""):\n\
+            v = v[1:-1]\n\
+        # Hack to allow self-reference of $PATH:\n\
+        if "$PATH" in v:\n\
+            v = v.replace("$PATH", os.environ["PATH"])\n\
+        os.environ[k] = v\n\
+with open("/tmp/launchcmd.txt", "r", encoding="utf-8") as f:\n\
+    cmd = f.read()\n\
+cmd = shlex.split(cmd)\n\
+os.execvp(cmd[0], cmd)' > /tmp/launch.py
 
-CMD ["bash", "/tmp/launch.sh"]
-
+CMD ["python3", "/tmp/launch.py"]
