@@ -58,13 +58,13 @@ def process_uname_arg(arg, complain_about_root=True):
                 "the build as root, which is UNSAFE).")
             print("Use --map-to-user option to skip this prompt next time.")
             unameresult = input("Username:")
-            if (unameresult == "root" or str(unameresult) == "1") and \
+            if (unameresult == "root" or str(unameresult) == "0") and \
                     complain_about_root:
                 result = input("You specified 'root'. This is UNSAFE. " +
                     "Continue? [y/N]")
                 if not result.lower() in ["y", "j", "yes"]:
                     continue
-                uname_or_id = 1
+                uname_or_id = 0
                 return uname_or_id
             if len(unameresult.strip()) == 0:
                 continue
